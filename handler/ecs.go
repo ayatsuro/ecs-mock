@@ -43,5 +43,18 @@ func IAMAction(ctx *gin.Context) {
 		ctx.JSON(200, keys)
 		return
 	}
-
+	if action == "CreateAccessKey" {
+		username := ctx.Query("UserName")
+		key := model.CreateAccessKey{
+			CreateAccessKeyResult: model.CreateAccessKeyResult{
+				AccessKey: model.AccessKey{
+					UserName:        username,
+					AccessKeyId:     "123",
+					SecretAccessKey: "456",
+				},
+			},
+		}
+		ctx.JSON(200, key)
+		return
+	}
 }

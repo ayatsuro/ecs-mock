@@ -38,6 +38,15 @@ type ListAccessKeysResult struct {
 }
 
 type AccessKey struct {
-	AccessKeyId string `json:"AccessKeyId"`
-	UserName    string `json:"UserName"`
+	AccessKeyId     string `json:"AccessKeyId"`
+	UserName        string `json:"UserName"`
+	SecretAccessKey string `json:"SecretAccessKey,omitempty"`
+}
+
+type CreateAccessKey struct {
+	CreateAccessKeyResult CreateAccessKeyResult `json:"CreateAccessKeyResult"`
+}
+
+type CreateAccessKeyResult struct {
+	AccessKey AccessKey `json:"AccessKey"`
 }
