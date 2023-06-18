@@ -27,6 +27,11 @@ func GetNativeUser(ctx *gin.Context) {
 
 func IAMAction(ctx *gin.Context) {
 	action := ctx.Query("Action")
+	ns := ctx.Request.Header.Get("x-emc-namespace")
+	if ns == "" {
+		ctx.AbortWithStatusJSON(400, gin.H{"error": "missing namespace header"})
+		return
+	}
 	if action == "ListUsers" {
 		users := model.IamUsers{ListUsersResult: model.Users{[]model.IamUser{{UserName: "aimUser1"}, {UserName: "aimUser2"}}}}
 		ctx.JSON(200, users)
@@ -56,5 +61,8 @@ func IAMAction(ctx *gin.Context) {
 		}
 		ctx.JSON(200, key)
 		return
+	}
+	if action == "DeleteAccessKey" {
+		ctx.Status(200)
 	}
 }
