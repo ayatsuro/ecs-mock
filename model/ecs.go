@@ -53,3 +53,10 @@ type CreateAccessKey struct {
 type CreateAccessKeyResult struct {
 	AccessKey AccessKey `json:"AccessKey"`
 }
+
+type VdcUser struct {
+	Password        string `json:"password"`
+	IsSystemAdmin   string `json:"isSystemAdmin"`
+	IsSystemMonitor string `json:"isSystemMonitor"`
+	IsSecurityAdmin string `json:"isSecurityAdmin"`
+}

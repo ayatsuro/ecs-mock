@@ -1,16 +1,14 @@
 package handler
 
 import (
+	"ecs-mock/service"
 	"encoding/base64"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/slog"
 	"strings"
 )
 
-const (
-	AuthHeader = "X-Sds-Auth-Token"
-	MockToken  = "blah"
-)
+const AuthHeader = "X-Sds-Auth-Token"
 
 func Login(ctx *gin.Context) {
 	var basic string
@@ -34,10 +32,11 @@ func Login(ctx *gin.Context) {
 		ctx.AbortWithStatus(403)
 		return
 	}
-	if username != "hello" || password != "world" {
+	token, ok := service.Login(username, password)
+	if !ok {
 		ctx.AbortWithStatus(403)
 		return
 	}
 	slog.Info("logged in")
-	ctx.Header(AuthHeader, MockToken)
+	ctx.Header(AuthHeader, token)
 }

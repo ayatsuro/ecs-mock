@@ -14,6 +14,7 @@ var (
 func InitData() {
 	rand.Seed(time.Now().UnixNano())
 	data = make(map[string]model.Namespace)
+
 }
 
 func ListNs() []string {
@@ -108,8 +109,8 @@ func CreateAccessKey(namespace, username string) (model.AccessKey, int) {
 		return key, 409
 	}
 	key.UserName = username
-	key.AccessKeyId = randString(8)
-	key.SecretAccessKey = randString(16)
+	key.AccessKeyId = RandString(8)
+	key.SecretAccessKey = RandString(16)
 	user.AccessKeys = append(user.AccessKeys, key)
 	return key, 200
 }
@@ -143,7 +144,7 @@ func DeleteAccessKey(namespace, username, keyId string) int {
 
 }
 
-func randString(n int) string {
+func RandString(n int) string {
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]

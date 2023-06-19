@@ -4,6 +4,7 @@ import (
 	"ecs-mock/model"
 	"ecs-mock/service"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 func ListNs(ctx *gin.Context) {
@@ -91,4 +92,15 @@ func IAMAction(ctx *gin.Context) {
 		}
 		ctx.Status(200)
 	}
+}
+
+func UpdateVdcUser(ctx *gin.Context) {
+	username := ctx.Param("item")
+	username = strings.TrimSuffix(username, ".json")
+	var vdcUser model.VdcUser
+	if err := ctx.BindJSON(&vdcUser); err != nil {
+		ctx.AbortWithStatusJSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	service.WriteAdminPwd(username, vdcUser)
 }

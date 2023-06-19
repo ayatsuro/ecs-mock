@@ -2,6 +2,7 @@ package main
 
 import (
 	"ecs-mock/handler"
+	"ecs-mock/service"
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/slog"
 )
@@ -20,6 +21,7 @@ func main() {
 	ns.GET("/users/:item/info.json", handler.GetNativeUser)
 	r.GET("/iam", handler.IAMAction)
 	r.POST("/iam", handler.IAMAction)
+	r.PUT("/vdc/users/:item", handler.UpdateVdcUser)
 
 	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
@@ -27,7 +29,7 @@ func main() {
 func getAuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		auth := ctx.GetHeader(handler.AuthHeader)
-		if auth != handler.MockToken {
+		if auth != service.GetToken() {
 			ctx.AbortWithStatus(401)
 			return
 		}
