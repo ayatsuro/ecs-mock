@@ -2,25 +2,31 @@ package handler
 
 import (
 	"ecs-mock/model"
+	"ecs-mock/service"
 	"github.com/gin-gonic/gin"
 )
 
 func ListNs(ctx *gin.Context) {
-	items := model.Namespaces{Namespace: []model.Namespace{{Name: "again"}, {Name: "again2"}}}
+	items := service.ListNs()
 	ctx.JSON(200, items)
 }
 
 func ListNativeUsers(ctx *gin.Context) {
-	users := model.NativeUsers{Users: []model.NativeUser{{Userid: "user1"}, {Userid: "user2"}}}
+	name := ctx.Param("item")
+	users, ok := service.ListNativeUsers(name)
+	if !ok {
+		ctx.AbortWithStatus(404)
+		return
+	}
 	ctx.JSON(200, users)
 }
 
 func GetNativeUser(ctx *gin.Context) {
-	user := model.NativeUser{}
-	if ctx.Param("userId") == "user1" {
-		user.Name = "john"
-	} else {
-		user.Name = "johnny"
+	uid := ctx.Param("item")
+	user, ok := service.GetNativeUser(uid)
+	if !ok {
+		ctx.AbortWithStatus(404)
+		return
 	}
 	ctx.JSON(200, user)
 }
@@ -33,44 +39,56 @@ func IAMAction(ctx *gin.Context) {
 		return
 	}
 	if action == "ListUsers" {
-		users := model.IamUsers{ListUsersResult: model.Users{[]model.IamUser{{UserName: "aimUser1"}, {UserName: "aimUser2"}}}}
+		users, ok := service.ListIamUsers(ns)
+		if !ok {
+			ctx.AbortWithStatus(404)
+			return
+		}
 		ctx.JSON(200, users)
 		return
 	}
 	if action == "ListAccessKeys" {
 		username := ctx.Query("UserName")
-		var keys model.AccessKeys
-		if username == "aimUser1" {
-			keys = model.AccessKeys{ListAccessKeysResult: model.ListAccessKeysResult{AccessKeyMetadata: []model.AccessKey{{AccessKeyId: "123"}}}}
-		} else {
-			keys = model.AccessKeys{ListAccessKeysResult: model.ListAccessKeysResult{AccessKeyMetadata: []model.AccessKey{{AccessKeyId: "123"}, {AccessKeyId: "456"}}}}
+		keys, ok := service.ListAccessKeys(ns, username)
+		if !ok {
+			ctx.AbortWithStatus(404)
+			return
 		}
 		ctx.JSON(200, keys)
 		return
 	}
 	if action == "CreateUser" {
 		username := ctx.Query("UserName")
-		user := model.IamUser{
-			UserName: username,
+		user, code := service.CreateIamUser(ns, username)
+		if code != 200 {
+			ctx.AbortWithStatus(code)
+			return
 		}
 		ctx.JSON(200, user)
 		return
 	}
 	if action == "CreateAccessKey" {
 		username := ctx.Query("UserName")
-		key := model.CreateAccessKey{
+		key, code := service.CreateAccessKey(ns, username)
+		if code != 200 {
+			ctx.AbortWithStatus(code)
+			return
+		}
+		output := model.CreateAccessKey{
 			CreateAccessKeyResult: model.CreateAccessKeyResult{
-				AccessKey: model.AccessKey{
-					UserName:        username,
-					AccessKeyId:     "123",
-					SecretAccessKey: "456",
-				},
+				AccessKey: key,
 			},
 		}
-		ctx.JSON(200, key)
+		ctx.JSON(200, output)
 		return
 	}
 	if action == "DeleteAccessKey" {
+		username := ctx.Query("UserName")
+		keyId := ctx.Query("AccessKeyId")
+		if code := service.DeleteAccessKey(ns, username, keyId); code != 200 {
+			ctx.AbortWithStatus(code)
+			return
+		}
 		ctx.Status(200)
 	}
 }

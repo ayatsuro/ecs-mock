@@ -5,7 +5,9 @@ type Namespaces struct {
 }
 
 type Namespace struct {
-	Name string `json:"name"`
+	Name        string       `json:"name"`
+	NativeUsers []NativeUser `json:"-"`
+	IamUsers    []IamUser    `json:"-"`
 }
 
 type NativeUsers struct {
@@ -26,7 +28,8 @@ type Users struct {
 }
 
 type IamUser struct {
-	UserName string `json:"UserName"`
+	UserName   string      `json:"UserName"`
+	AccessKeys []AccessKey `json:"-"`
 }
 
 type AccessKeys struct {
