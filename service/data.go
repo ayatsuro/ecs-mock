@@ -14,6 +14,20 @@ var (
 func InitData() {
 	rand.Seed(time.Now().UnixNano())
 	data = make(map[string]model.Namespace)
+	data["ns-native-user"] = model.Namespace{
+		Name:        "ns-native-user",
+		NativeUsers: []model.NativeUser{{Userid: "nativeUser1", Name: "nativeUser1"}},
+	}
+	data["ns-native-user-iam-user-1key"] = model.Namespace{
+		Name:        "ns-native-user-iam-user-1key",
+		NativeUsers: []model.NativeUser{{Userid: "nativeUser2", Name: "nativeUser2"}},
+		IamUsers:    []model.IamUser{{UserName: "iamUser1", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId1", SecretAccessKey: "secretAccessKey1"}}}},
+	}
+	data["ns-native-user-iam-user-2keys"] = model.Namespace{
+		Name:        "ns-native-user-iam-user-2keys",
+		NativeUsers: []model.NativeUser{{Userid: "nativeUser3", Name: "nativeUser3"}},
+		IamUsers:    []model.IamUser{{UserName: "iamUser2", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId2", SecretAccessKey: "secretAccessKey2"}, {AccessKeyId: "accessKeyId3", SecretAccessKey: "secretAccessKey3"}}}},
+	}
 
 }
 

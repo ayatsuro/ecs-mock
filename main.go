@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	service.InitData()
 	r := gin.Default()
 	r.Use(func(ctx *gin.Context) {
 		slog.Info(ctx.Request.Method, ctx.Request.URL)
