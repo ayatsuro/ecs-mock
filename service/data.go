@@ -7,34 +7,33 @@ import (
 )
 
 var (
-	data    map[string]model.Namespace
+	data    map[string]*model.Namespace
 	letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
 
 func InitData() {
 	rand.Seed(time.Now().UnixNano())
-	data = make(map[string]model.Namespace)
-	data["ns-native-user"] = model.Namespace{
+	data = make(map[string]*model.Namespace)
+	data["ns-native-user"] = &model.Namespace{
 		Name:        "ns-native-user",
 		NativeUsers: []model.NativeUser{{Userid: "nativeUser1", Name: "nativeUser1"}},
 	}
-	data["ns-native-user-iam-user-1key"] = model.Namespace{
+	data["ns-native-user-iam-user-1key"] = &model.Namespace{
 		Name:        "ns-native-user-iam-user-1key",
 		NativeUsers: []model.NativeUser{{Userid: "nativeUser2", Name: "nativeUser2"}},
-		IamUsers:    []model.IamUser{{UserName: "iamUser1", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId1", SecretAccessKey: "secretAccessKey1"}}}},
+		IamUsers:    []*model.IamUser{{UserName: "iamUser1", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId1", SecretAccessKey: "secretAccessKey1"}}}},
 	}
-	data["ns-native-user-iam-user-2keys"] = model.Namespace{
+	data["ns-native-user-iam-user-2keys"] = &model.Namespace{
 		Name:        "ns-native-user-iam-user-2keys",
 		NativeUsers: []model.NativeUser{{Userid: "nativeUser3", Name: "nativeUser3"}},
-		IamUsers:    []model.IamUser{{UserName: "iamUser2", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId2", SecretAccessKey: "secretAccessKey2"}, {AccessKeyId: "accessKeyId3", SecretAccessKey: "secretAccessKey3"}}}},
+		IamUsers:    []*model.IamUser{{UserName: "iamUser2", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId2", SecretAccessKey: "secretAccessKey2"}, {AccessKeyId: "accessKeyId3", SecretAccessKey: "secretAccessKey3"}}}},
 	}
-
 }
 
-func ListNs() []string {
-	var ns []string
-	for n, _ := range data {
-		ns = append(ns, n)
+func ListNs() []model.Namespace {
+	var ns []model.Namespace
+	for _, n := range data {
+		ns = append(ns, *n)
 	}
 	return ns
 }
@@ -63,24 +62,11 @@ func ListIamUsers(namespace string) ([]model.IamUser, bool) {
 	if !ok {
 		return nil, false
 	}
-	return ns.IamUsers, true
-}
-
-func ListAccessKeys(namespace, username string) ([]model.AccessKey, bool) {
-	ns, ok := data[namespace]
-	if !ok {
-		return nil, false
-	}
+	var users []model.IamUser
 	for _, u := range ns.IamUsers {
-		if u.UserName == username {
-			var maskedAccessKey []model.AccessKey
-			for _, key := range u.AccessKeys {
-				maskedAccessKey = append(maskedAccessKey, model.AccessKey{AccessKeyId: key.AccessKeyId, UserName: username, SecretAccessKey: "<masked>"})
-			}
-			return maskedAccessKey, true
-		}
+		users = append(users, *u)
 	}
-	return nil, false
+	return users, true
 }
 
 func CreateIamUser(namespace, username string) (model.IamUser, int) {
@@ -99,7 +85,7 @@ func CreateIamUser(namespace, username string) (model.IamUser, int) {
 		return model.IamUser{}, 409
 	}
 	user := model.IamUser{UserName: username}
-	ns.IamUsers = append(ns.IamUsers, user)
+	ns.IamUsers = append(ns.IamUsers, &user)
 	return user, 200
 }
 
@@ -109,14 +95,14 @@ func CreateAccessKey(namespace, username string) (model.AccessKey, int) {
 	if !ok {
 		return key, 404
 	}
-	var user model.IamUser
-	for i, u := range ns.IamUsers {
+	var user *model.IamUser
+	for _, u := range ns.IamUsers {
 		if u.UserName == username {
-			user = ns.IamUsers[i] // since u is local copy
+			user = u
 			break
 		}
 	}
-	if user.UserName == "" {
+	if user == nil {
 		return key, 404
 	}
 	if len(user.AccessKeys) == 2 {
@@ -134,14 +120,14 @@ func DeleteAccessKey(namespace, username, keyId string) int {
 	if !ok {
 		return 404
 	}
-	var user model.IamUser
-	for i, u := range ns.IamUsers {
+	var user *model.IamUser
+	for _, u := range ns.IamUsers {
 		if u.UserName == username {
-			user = ns.IamUsers[i] // since u is local copy
+			user = u
 			break
 		}
 	}
-	if user.UserName == "" {
+	if user == nil {
 		return 404
 	}
 	code := 404

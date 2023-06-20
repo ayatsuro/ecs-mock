@@ -9,7 +9,8 @@ import (
 
 func ListNs(ctx *gin.Context) {
 	items := service.ListNs()
-	ctx.JSON(200, items)
+	output := model.Namespaces{Namespace: items}
+	ctx.JSON(200, output)
 }
 
 func ListNativeUsers(ctx *gin.Context) {
@@ -45,17 +46,8 @@ func IAMAction(ctx *gin.Context) {
 			ctx.AbortWithStatus(404)
 			return
 		}
-		ctx.JSON(200, users)
-		return
-	}
-	if action == "ListAccessKeys" {
-		username := ctx.Query("UserName")
-		keys, ok := service.ListAccessKeys(ns, username)
-		if !ok {
-			ctx.AbortWithStatus(404)
-			return
-		}
-		ctx.JSON(200, keys)
+		output := model.ListIamUsers{ListUsersResult: model.Users{Users: users}}
+		ctx.JSON(200, output)
 		return
 	}
 	if action == "CreateUser" {
