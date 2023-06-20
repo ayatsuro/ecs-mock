@@ -36,6 +36,7 @@ type AccessKey struct {
 	AccessKeyId     string `json:"AccessKeyId"`
 	UserName        string `json:"UserName"`
 	SecretAccessKey string `json:"SecretAccessKey,omitempty"`
+	CreateDate      string `json:"CreateDate"`
 }
 
 type CreateAccessKey struct {
