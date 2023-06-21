@@ -77,6 +77,17 @@ func IAMAction(ctx *gin.Context) {
 		ctx.JSON(200, output)
 		return
 	}
+	if action == "ListAccessKeys" {
+		username := ctx.Query("UserName")
+		keys, code := service.ListAccessKeys(ns, username)
+		if code != 200 {
+			ctx.AbortWithStatus(code)
+			return
+		}
+		output := model.ListAccessKeys{ListAccessKeysResult: model.AccessKeyMetadata{AccessKeys: keys}}
+		ctx.JSON(200, output)
+		return
+	}
 	if action == "DeleteAccessKey" {
 		username := ctx.Query("UserName")
 		keyId := ctx.Query("AccessKeyId")

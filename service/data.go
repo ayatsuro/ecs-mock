@@ -24,7 +24,7 @@ func InitData() {
 		IamUsers:    []*model.IamUser{{UserName: "iamUser1", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId1", SecretAccessKey: "secretAccessKey1"}}}},
 	}
 	data["ci898640-native-user-iam-user-2keys"] = &model.Namespace{
-		Name:        "ci45678-native-user-iam-user-2keys",
+		Name:        "ci898640-native-user-iam-user-2keys",
 		NativeUsers: []model.NativeUser{{Userid: "nativeUser3", Name: "nativeUser3"}},
 		IamUsers:    []*model.IamUser{{UserName: "iamUser2", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId2", SecretAccessKey: "secretAccessKey2"}, {AccessKeyId: "accessKeyId3", SecretAccessKey: "secretAccessKey3"}}}},
 	}
@@ -151,4 +151,22 @@ func RandString(n int) string {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
+}
+
+func ListAccessKeys(namespace, username string) ([]model.AccessKey, int) {
+	ns, ok := data[namespace]
+	if !ok {
+		return nil, 404
+	}
+	var user *model.IamUser
+	for _, u := range ns.IamUsers {
+		if u.UserName == username {
+			user = u
+			break
+		}
+	}
+	if user == nil {
+		return nil, 404
+	}
+	return user.AccessKeys, 200
 }

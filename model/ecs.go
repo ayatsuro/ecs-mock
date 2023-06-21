@@ -53,3 +53,11 @@ type VdcUser struct {
 	IsSystemMonitor string `json:"isSystemMonitor"`
 	IsSecurityAdmin string `json:"isSecurityAdmin"`
 }
+
+type ListAccessKeys struct {
+	ListAccessKeysResult AccessKeyMetadata `json:"ListAccessKeysResult"`
+}
+
+type AccessKeyMetadata struct {
+	AccessKeys []AccessKey `json:"AccessKeyMetadata"`
+}
