@@ -13,12 +13,23 @@ func ListNs(ctx *gin.Context) {
 	ctx.JSON(200, output)
 }
 
+func GetNs(ctx *gin.Context) {
+	name := ctx.Param("item")
+	name = strings.TrimSuffix(name, ".json")
+	item, ok := service.GetNs(name)
+	if !ok {
+		ctx.AbortWithStatusJSON(404, gin.H{"error": "namespace not found"})
+		return
+	}
+	ctx.JSON(200, item)
+}
+
 func ListNativeUsers(ctx *gin.Context) {
 	name := ctx.Param("item")
 	name = strings.TrimSuffix(name, ".json")
 	users, ok := service.ListNativeUsers(name)
 	if !ok {
-		ctx.AbortWithStatus(404)
+		ctx.AbortWithStatusJSON(404, gin.H{"error": "namespace not found"})
 		return
 	}
 	output := model.NativeUsers{Users: users}
@@ -29,7 +40,7 @@ func GetNativeUser(ctx *gin.Context) {
 	uid := ctx.Param("item")
 	user, ok := service.GetNativeUser(uid)
 	if !ok {
-		ctx.AbortWithStatus(404)
+		ctx.AbortWithStatusJSON(404, gin.H{"error": "native user not found"})
 		return
 	}
 	ctx.JSON(200, user)
@@ -42,31 +53,51 @@ func IAMAction(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(400, gin.H{"error": "missing namespace header"})
 		return
 	}
+	_, ok := service.GetNs(ns)
+	if !ok {
+		ctx.AbortWithStatusJSON(404, gin.H{"error": "namespace not found"})
+		return
+	}
 	if action == "ListUsers" {
-		users, ok := service.ListIamUsers(ns)
-		if !ok {
-			ctx.AbortWithStatus(404)
-			return
-		}
+		users := service.ListIamUsers(ns)
 		output := model.ListIamUsers{ListUsersResult: model.Users{Users: users}}
 		ctx.JSON(200, output)
-		return
+	}
+	if action == "GetUser" {
+		user, code := service.GetIamUser(ns, ctx.Query("UserName"))
+		if code != 200 {
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "iam user not found"})
+			return
+		}
+		ctx.JSON(200, user)
 	}
 	if action == "CreateUser" {
 		username := ctx.Query("UserName")
 		user, code := service.CreateIamUser(ns, username)
-		if code != 200 {
-			ctx.AbortWithStatus(code)
+		if code == 409 {
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "iam user exists already"})
 			return
 		}
 		ctx.JSON(200, user)
-		return
+	}
+	if action == "DeleteUser" {
+		username := ctx.Query("UserName")
+		code := service.DeleteIamUser(ns, username)
+		if code != 200 {
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "iam user not found"})
+			return
+		}
+		ctx.Status(200)
 	}
 	if action == "CreateAccessKey" {
 		username := ctx.Query("UserName")
 		key, code := service.CreateAccessKey(ns, username)
-		if code != 200 {
-			ctx.AbortWithStatus(code)
+		if code == 404 {
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "user not found"})
+			return
+		}
+		if code == 409 {
+			ctx.AbortWithStatusJSON(409, gin.H{"error": "max number of access keys reached"})
 			return
 		}
 		output := model.CreateAccessKey{
@@ -75,24 +106,22 @@ func IAMAction(ctx *gin.Context) {
 			},
 		}
 		ctx.JSON(200, output)
-		return
 	}
 	if action == "ListAccessKeys" {
 		username := ctx.Query("UserName")
 		keys, code := service.ListAccessKeys(ns, username)
 		if code != 200 {
-			ctx.AbortWithStatus(code)
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "user not found"})
 			return
 		}
 		output := model.ListAccessKeys{ListAccessKeysResult: model.AccessKeyMetadata{AccessKeys: keys}}
 		ctx.JSON(200, output)
-		return
 	}
 	if action == "DeleteAccessKey" {
 		username := ctx.Query("UserName")
 		keyId := ctx.Query("AccessKeyId")
 		if code := service.DeleteAccessKey(ns, username, keyId); code != 200 {
-			ctx.AbortWithStatus(code)
+			ctx.AbortWithStatusJSON(404, gin.H{"error": "user or access key not found"})
 			return
 		}
 		ctx.Status(200)

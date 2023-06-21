@@ -38,6 +38,11 @@ func ListNs() []model.Namespace {
 	return ns
 }
 
+func GetNs(name string) (*model.Namespace, bool) {
+	ns, ok := data[name]
+	return ns, ok
+}
+
 func ListNativeUsers(namespace string) ([]model.NativeUser, bool) {
 	ns, ok := data[namespace]
 	if !ok {
@@ -57,23 +62,27 @@ func GetNativeUser(uid string) (model.NativeUser, bool) {
 	return model.NativeUser{}, false
 }
 
-func ListIamUsers(namespace string) ([]model.IamUser, bool) {
-	ns, ok := data[namespace]
-	if !ok {
-		return nil, false
-	}
+func ListIamUsers(namespace string) []model.IamUser {
+	ns := data[namespace]
 	var users []model.IamUser
 	for _, u := range ns.IamUsers {
 		users = append(users, *u)
 	}
-	return users, true
+	return users
+}
+
+func GetIamUser(namespace, username string) (*model.IamUser, int) {
+	ns := data[namespace]
+	for _, u := range ns.IamUsers {
+		if u.UserName == username {
+			return u, 200
+		}
+	}
+	return nil, 404
 }
 
 func CreateIamUser(namespace, username string) (model.IamUser, int) {
-	ns, ok := data[namespace]
-	if !ok {
-		return model.IamUser{}, 404
-	}
+	ns := data[namespace]
 	found := false
 	for _, u := range ns.IamUsers {
 		if u.UserName == username {
@@ -89,12 +98,24 @@ func CreateIamUser(namespace, username string) (model.IamUser, int) {
 	return user, 200
 }
 
+func DeleteIamUser(namespace, username string) int {
+	ns := data[namespace]
+	var keep []*model.IamUser
+	for _, u := range ns.IamUsers {
+		if u.UserName != username {
+			keep = append(keep, u)
+		}
+	}
+	if len(keep) == len(ns.IamUsers) {
+		return 404
+	}
+	ns.IamUsers = keep
+	return 200
+}
+
 func CreateAccessKey(namespace, username string) (model.AccessKey, int) {
 	key := model.AccessKey{}
-	ns, ok := data[namespace]
-	if !ok {
-		return key, 404
-	}
+	ns := data[namespace]
 	var user *model.IamUser
 	for _, u := range ns.IamUsers {
 		if u.UserName == username {
@@ -117,10 +138,7 @@ func CreateAccessKey(namespace, username string) (model.AccessKey, int) {
 }
 
 func DeleteAccessKey(namespace, username, keyId string) int {
-	ns, ok := data[namespace]
-	if !ok {
-		return 404
-	}
+	ns := data[namespace]
 	var user *model.IamUser
 	for _, u := range ns.IamUsers {
 		if u.UserName == username {
@@ -154,10 +172,7 @@ func RandString(n int) string {
 }
 
 func ListAccessKeys(namespace, username string) ([]model.AccessKey, int) {
-	ns, ok := data[namespace]
-	if !ok {
-		return nil, 404
-	}
+	ns := data[namespace]
 	var user *model.IamUser
 	for _, u := range ns.IamUsers {
 		if u.UserName == username {
