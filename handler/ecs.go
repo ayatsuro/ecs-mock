@@ -15,12 +15,14 @@ func ListNs(ctx *gin.Context) {
 
 func ListNativeUsers(ctx *gin.Context) {
 	name := ctx.Param("item")
+	name = strings.TrimSuffix(name, ".json")
 	users, ok := service.ListNativeUsers(name)
 	if !ok {
 		ctx.AbortWithStatus(404)
 		return
 	}
-	ctx.JSON(200, users)
+	output := model.NativeUsers{Users: users}
+	ctx.JSON(200, output)
 }
 
 func GetNativeUser(ctx *gin.Context) {
