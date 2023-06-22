@@ -75,7 +75,7 @@ func IAMAction(ctx *gin.Context) {
 		username := ctx.Query("UserName")
 		user, code := service.CreateIamUser(ns, username)
 		if code == 409 {
-			ctx.AbortWithStatusJSON(404, gin.H{"error": "iam user exists already"})
+			ctx.AbortWithStatusJSON(409, gin.H{"error": "iam user exists already"})
 			return
 		}
 		ctx.JSON(200, user)
