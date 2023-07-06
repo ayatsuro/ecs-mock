@@ -5,18 +5,8 @@ type Namespaces struct {
 }
 
 type Namespace struct {
-	Name        string       `json:"name"`
-	NativeUsers []NativeUser `json:"-"`
-	IamUsers    []*IamUser   `json:"-"`
-}
-
-type NativeUsers struct {
-	Users []NativeUser `json:"blobuser"`
-}
-
-type NativeUser struct {
-	Userid string `json:"userid,omitempty"`
-	Name   string `json:"name,omitempty"`
+	Name     string     `json:"name"`
+	IamUsers []*IamUser `json:"-"`
 }
 
 type ListIamUsers struct {

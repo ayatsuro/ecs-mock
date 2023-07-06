@@ -24,28 +24,6 @@ func GetNs(ctx *gin.Context) {
 	ctx.JSON(200, item)
 }
 
-func ListNativeUsers(ctx *gin.Context) {
-	name := ctx.Param("item")
-	name = strings.TrimSuffix(name, ".json")
-	users, ok := service.ListNativeUsers(name)
-	if !ok {
-		ctx.AbortWithStatusJSON(404, gin.H{"error": "namespace not found"})
-		return
-	}
-	output := model.NativeUsers{Users: users}
-	ctx.JSON(200, output)
-}
-
-func GetNativeUser(ctx *gin.Context) {
-	uid := ctx.Param("item")
-	user, ok := service.GetNativeUser(uid)
-	if !ok {
-		ctx.AbortWithStatusJSON(404, gin.H{"error": "native user not found"})
-		return
-	}
-	ctx.JSON(200, user)
-}
-
 func IAMAction(ctx *gin.Context) {
 	action := ctx.Query("Action")
 	ns := ctx.Request.Header.Get("x-emc-namespace")

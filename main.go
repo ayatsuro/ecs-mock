@@ -19,8 +19,6 @@ func main() {
 	ns.Use(getAuthMiddleware())
 	ns.GET("/namespaces.json", handler.ListNs)
 	ns.GET("/namespaces/namespace/:item", handler.GetNs)
-	ns.GET("/users/:item", handler.ListNativeUsers)
-	ns.GET("/users/:item/info.json", handler.GetNativeUser)
 	r.GET("/iam", handler.IAMAction)
 	r.POST("/iam", handler.IAMAction)
 	r.PUT("/vdc/users/:item", handler.UpdateVdcUser)

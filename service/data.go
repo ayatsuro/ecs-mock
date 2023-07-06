@@ -14,19 +14,16 @@ var (
 func InitData() {
 	rand.Seed(time.Now().UnixNano())
 	data = make(map[string]*model.Namespace)
-	data["ci12345-native-user"] = &model.Namespace{
-		Name:        "ci12345-native-user",
-		NativeUsers: []model.NativeUser{{Userid: "nativeUser1", Name: "nativeUser1"}},
+	data["ci12345"] = &model.Namespace{
+		Name: "ci12345",
 	}
-	data["ci45678-native-user-iam-user-1key"] = &model.Namespace{
-		Name:        "ci45678-native-user-iam-user-1key",
-		NativeUsers: []model.NativeUser{{Userid: "nativeUser2", Name: "nativeUser2"}},
-		IamUsers:    []*model.IamUser{{UserName: "iamUser1", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId1", SecretAccessKey: "secretAccessKey1"}}}},
+	data["ci45678-iam-user-1key"] = &model.Namespace{
+		Name:     "ci45678-iam-user-1key",
+		IamUsers: []*model.IamUser{{UserName: "iamuser1", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId1", SecretAccessKey: "secretAccessKey1"}}}},
 	}
-	data["ci898640-native-user-iam-user-2keys"] = &model.Namespace{
-		Name:        "ci898640-native-user-iam-user-2keys",
-		NativeUsers: []model.NativeUser{{Userid: "nativeUser3", Name: "nativeUser3"}},
-		IamUsers:    []*model.IamUser{{UserName: "iamUser2", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId2", SecretAccessKey: "secretAccessKey2"}, {AccessKeyId: "accessKeyId3", SecretAccessKey: "secretAccessKey3"}}}},
+	data["ci898640-iam-user-2keys"] = &model.Namespace{
+		Name:     "ci898640-iam-user-2keys",
+		IamUsers: []*model.IamUser{{UserName: "iamuser2", AccessKeys: []model.AccessKey{{AccessKeyId: "accessKeyId2", SecretAccessKey: "secretAccessKey2"}, {AccessKeyId: "accessKeyId3", SecretAccessKey: "secretAccessKey3"}}}},
 	}
 }
 
@@ -41,25 +38,6 @@ func ListNs() []model.Namespace {
 func GetNs(name string) (*model.Namespace, bool) {
 	ns, ok := data[name]
 	return ns, ok
-}
-
-func ListNativeUsers(namespace string) ([]model.NativeUser, bool) {
-	ns, ok := data[namespace]
-	if !ok {
-		return nil, false
-	}
-	return ns.NativeUsers, true
-}
-
-func GetNativeUser(uid string) (model.NativeUser, bool) {
-	for _, ns := range data {
-		for _, u := range ns.NativeUsers {
-			if u.Userid == uid {
-				return u, true
-			}
-		}
-	}
-	return model.NativeUser{}, false
 }
 
 func ListIamUsers(namespace string) []model.IamUser {
